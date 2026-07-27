@@ -1,0 +1,51 @@
+COMIC DAILY SITE — SETUP
+
+FILES
+- index.html: Public comic page
+- admin.html: Private banner-message editor
+- config.js: Main settings
+- assets/: Background and comic images
+
+QUICK STATIC SETUP
+1. Replace assets/comic-1.png with today's comic.
+2. Replace comic-2.png, comic-3.png, and comic-4.png with older pages.
+3. Edit the currentComic and previousComics lists in config.js.
+4. Upload the entire folder to your website host.
+
+COUNTDOWN
+The countdown currently resets at 12:00 AM in America/Denver.
+Change releaseHour and releaseMinute in config.js.
+Examples:
+- 8:00 AM: releaseHour: 8, releaseMinute: 0
+- 7:30 PM: releaseHour: 19, releaseMinute: 30
+
+LIVE BANNER ADMIN SETUP
+The admin page needs a small online database so a message entered on one device
+appears for every visitor.
+
+Recommended free option: Firebase Realtime Database.
+
+1. Create a Firebase project.
+2. Add a Web App.
+3. Create a Realtime Database.
+4. Copy your Firebase Web App values into config.js.
+5. Change firebase.enabled from false to true.
+6. During initial testing, set database rules to allow reads and writes.
+7. Before publishing widely, protect admin.html and use Firebase Authentication
+   or host-level password protection.
+
+Example temporary database rules for testing only:
+{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}
+
+WARNING:
+Those temporary rules allow anyone who knows the database URL to write data.
+Do not leave them enabled permanently.
+
+BACKGROUND
+The current background is assets/comic-background.png.
+Replace it with another image while keeping the same filename if desired.

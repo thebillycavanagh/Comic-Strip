@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Fresh Comic. Every Day.</title>
+  <meta name="description" content="A new comic page every day, with previous pages available below.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#17140f;
+      --paper:#eadfc7;
+      --paper-light:#f8f1e3;
+      --accent:#9f2020;
+      --gold:#bc8c34;
+      --shadow:rgba(28,20,10,.24);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:var(--ink);
+      font-family:Inter,Arial,sans-serif;
+      min-height:100vh;
+      background:
+        linear-gradient(rgba(246,238,218,.86),rgba(246,238,218,.86)),
+        url("assets/comic-background.png") center top/cover fixed;
+    }
+    body:before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.12;
+      background-image:
+        radial-gradient(circle at 20% 20%,#000 0 1px,transparent 1.4px),
+        radial-gradient(circle at 80% 60%,#000 0 1px,transparent 1.4px);
+      background-size:13px 13px,17px 17px;
+      mix-blend-mode:multiply;
+    }
+    .announcement{
+      position:sticky;
+      top:0;
+      z-index:20;
+      width:100%;
+      padding:11px 20px;
+      text-align:center;
+      background:var(--ink);
+      color:#fff7e7;
+      border-bottom:3px solid var(--gold);
+      font-weight:700;
+      letter-spacing:.03em;
+    }
+    .countdown-wrap{
+      width:100%;
+      background:rgba(159,32,32,.96);
+      color:#fff;
+      border-bottom:2px solid var(--ink);
+      text-align:center;
+      padding:12px 16px;
+    }
+    .countdown-label{
+      display:block;
+      font-size:.78rem;
+      font-weight:700;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      margin-bottom:3px;
+    }
+    #countdown{
+      font-family:Bangers,Impact,sans-serif;
+      font-size:clamp(1.8rem,5vw,3rem);
+      letter-spacing:.09em;
+      line-height:1;
+      text-shadow:2px 2px 0 rgba(0,0,0,.25);
+    }
+    .page{
+      width:min(1040px,calc(100% - 28px));
+      margin:0 auto;
+      padding:34px 0 54px;
+    }
+    header{text-align:center;margin-bottom:22px}
+    h1{
+      margin:0;
+      font-family:Bangers,Impact,sans-serif;
+      font-size:clamp(2.7rem,8vw,5.8rem);
+      letter-spacing:.04em;
+      transform:rotate(-1deg);
+      text-shadow:3px 3px 0 rgba(255,255,255,.85),5px 5px 0 rgba(23,20,15,.12);
+    }
+    .subtitle{
+      margin:5px 0 0;
+      font-weight:700;
+      letter-spacing:.13em;
+      text-transform:uppercase;
+      font-size:.78rem;
+    }
+    .comic-frame{
+      position:relative;
+      padding:clamp(10px,2vw,18px);
+      background:rgba(255,250,239,.94);
+      border:4px solid var(--ink);
+      box-shadow:10px 12px 0 var(--shadow);
+    }
+    .comic-frame:before,.comic-frame:after{
+      content:"";
+      position:absolute;
+      width:58px;
+      height:18px;
+      background:rgba(212,188,139,.75);
+      border:1px solid rgba(40,30,15,.25);
+      top:-10px;
+      transform:rotate(-5deg);
+    }
+    .comic-frame:before{left:12%}
+    .comic-frame:after{right:12%;transform:rotate(5deg)}
+    .comic-frame img{
+      display:block;
+      width:100%;
+      height:auto;
+      max-height:74vh;
+      object-fit:contain;
+      background:#fff;
+    }
+    .comic-meta{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:12px;
+      font-size:.83rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+    .archive{margin-top:38px}
+    .archive h2{
+      margin:0 0 14px;
+      font-family:Bangers,Impact,sans-serif;
+      font-size:2rem;
+      letter-spacing:.06em;
+    }
+    .thumbs{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
+      gap:14px;
+    }
+    .thumb{
+      appearance:none;
+      border:3px solid var(--ink);
+      padding:6px;
+      background:rgba(255,250,239,.94);
+      cursor:pointer;
+      box-shadow:5px 6px 0 rgba(28,20,10,.2);
+      text-align:left;
+      color:inherit;
+    }
+    .thumb:hover{transform:translateY(-2px)}
+    .thumb img{
+      display:block;
+      width:100%;
+      aspect-ratio:4/3;
+      object-fit:cover;
+      background:#fff;
+    }
+    .thumb span{
+      display:block;
+      padding:7px 3px 2px;
+      font-weight:700;
+      font-size:.75rem;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+    footer{
+      padding:26px 16px;
+      text-align:center;
+      font-size:.75rem;
+      font-weight:700;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+    }
+    @media(max-width:600px){
+      .page{width:min(100% - 18px,1040px);padding-top:24px}
+      .comic-frame{border-width:3px;box-shadow:6px 7px 0 var(--shadow)}
+      .announcement{position:relative}
+      .comic-meta{display:block}
+      .comic-meta span{display:block;margin-top:5px}
+    }
+  </style>
+</head>
+<body>
+  <div class="announcement" id="announcement" aria-live="polite">Loading message…</div>
+
+  <section class="countdown-wrap" aria-label="Countdown to the next comic release">
+    <span class="countdown-label">Next page releases in</span>
+    <div id="countdown">00:00:00</div>
+  </section>
+
+  <main class="page">
+    <header>
+      <h1 id="site-title">Fresh Comic. Every Day.</h1>
+      <p class="subtitle">Today’s page stays front and center</p>
+    </header>
+
+    <section class="comic-frame" aria-label="Current comic">
+      <img id="main-comic" src="" alt="">
+      <div class="comic-meta">
+        <strong>Current Page</strong>
+        <span id="main-date"></span>
+      </div>
+    </section>
+
+    <section class="archive" aria-labelledby="archive-title">
+      <h2 id="archive-title">Previous Pages</h2>
+      <div class="thumbs" id="archive-grid"></div>
+    </section>
+  </main>
+
+  <footer>Daily Comic Archive</footer>
+
+  <script src="config.js"></script>
+  <script type="module">
+    const config = window.COMIC_SITE_CONFIG;
+
+    document.title = config.siteTitle;
+    document.getElementById("site-title").textContent = config.siteTitle;
+
+    const mainComic = document.getElementById("main-comic");
+    const mainDate = document.getElementById("main-date");
+    const archiveGrid = document.getElementById("archive-grid");
+
+    function showComic(comic) {
+      mainComic.src = comic.src;
+      mainComic.alt = comic.alt || "Comic page";
+      mainDate.textContent = comic.date || "";
+      window.scrollTo({top: document.querySelector(".comic-frame").offsetTop - 90, behavior:"smooth"});
+    }
+
+    showComic(config.currentComic);
+
+    config.previousComics.forEach((comic) => {
+      const button = document.createElement("button");
+      button.className = "thumb";
+      button.type = "button";
+      button.innerHTML = `<img src="${comic.src}" alt="${comic.alt || "Previous comic"}"><span>${comic.date || "Previous Page"}</span>`;
+      button.addEventListener("click", () => showComic(comic));
+      archiveGrid.appendChild(button);
+    });
+
+    function getDenverParts(date = new Date()) {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: config.timezone,
+        year:"numeric", month:"2-digit", day:"2-digit",
+        hour:"2-digit", minute:"2-digit", second:"2-digit",
+        hourCycle:"h23"
+      }).formatToParts(date);
+      return Object.fromEntries(parts.map(p => [p.type,p.value]));
+    }
+
+    function getOffsetMs(date, timeZone) {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone, year:"numeric", month:"2-digit", day:"2-digit",
+        hour:"2-digit", minute:"2-digit", second:"2-digit",
+        hourCycle:"h23"
+      }).formatToParts(date);
+      const map = Object.fromEntries(parts.map(p => [p.type,p.value]));
+      const asUTC = Date.UTC(+map.year,+map.month-1,+map.day,+map.hour,+map.minute,+map.second);
+      return asUTC - date.getTime();
+    }
+
+    function zonedDateToUtc(year, month, day, hour, minute, timeZone) {
+      let guess = Date.UTC(year, month - 1, day, hour, minute, 0);
+      for (let i = 0; i < 3; i++) {
+        guess -= getOffsetMs(new Date(guess), timeZone);
+      }
+      return new Date(guess);
+    }
+
+    function nextReleaseDate() {
+      const now = new Date();
+      const p = getDenverParts(now);
+      let y = +p.year, m = +p.month, d = +p.day;
+      const currentMinutes = (+p.hour * 60) + +p.minute;
+      const releaseMinutes = config.releaseHour * 60 + config.releaseMinute;
+
+      if (currentMinutes >= releaseMinutes) {
+        const temp = new Date(Date.UTC(y, m - 1, d + 1));
+        y = temp.getUTCFullYear();
+        m = temp.getUTCMonth() + 1;
+        d = temp.getUTCDate();
+      }
+
+      return zonedDateToUtc(y,m,d,config.releaseHour,config.releaseMinute,config.timezone);
+    }
+
+    let target = nextReleaseDate();
+    function updateCountdown() {
+      const now = new Date();
+      if (now >= target) target = nextReleaseDate();
+
+      const diff = Math.max(0,target-now);
+      const hours = Math.floor(diff / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
+      document.getElementById("countdown").textContent =
+        `${String(hours).padStart(2,"0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+    }
+    updateCountdown();
+    setInterval(updateCountdown,1000);
+
+    async function loadBanner() {
+      const banner = document.getElementById("announcement");
+      if (!config.firebase.enabled) {
+        banner.textContent = config.fallbackMessage;
+        return;
+      }
+
+      try {
+        const appModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
+        const dbModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js");
+        const app = appModule.initializeApp(config.firebase);
+        const db = dbModule.getDatabase(app);
+        dbModule.onValue(dbModule.ref(db,"site/banner"), snapshot => {
+          banner.textContent = snapshot.val() || config.fallbackMessage;
+        });
+      } catch (error) {
+        banner.textContent = config.fallbackMessage;
+        console.error("Banner connection failed:", error);
+      }
+    }
+    loadBanner();
+  </script>
+</body>
+</html>

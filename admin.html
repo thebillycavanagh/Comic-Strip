@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Comic Site Message Admin</title>
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:20px;
+      background:#eee3cc;
+      color:#181510;
+      font-family:Arial,sans-serif;
+    }
+    main{
+      width:min(620px,100%);
+      border:4px solid #181510;
+      background:#fffaf0;
+      padding:24px;
+      box-shadow:9px 10px 0 rgba(0,0,0,.18);
+    }
+    h1{margin-top:0}
+    label{display:block;font-weight:700;margin-bottom:8px}
+    textarea{
+      width:100%;
+      min-height:140px;
+      resize:vertical;
+      padding:13px;
+      border:2px solid #181510;
+      font:inherit;
+    }
+    button{
+      margin-top:14px;
+      width:100%;
+      padding:12px;
+      border:2px solid #181510;
+      background:#9f2020;
+      color:white;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .status{min-height:24px;margin-top:12px;font-weight:700}
+    .note{font-size:.9rem;line-height:1.5}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Public Message Banner</h1>
+    <p class="note">Type the message that visitors should see across the top of the comic page.</p>
+
+    <label for="message">Banner message</label>
+    <textarea id="message" maxlength="240" placeholder="Enter the public message here…"></textarea>
+    <button id="save" type="button">Publish Message</button>
+    <div class="status" id="status" aria-live="polite"></div>
+
+    <p class="note"><strong>Important:</strong> Enable Firebase in <code>config.js</code> before using this admin page. Keep this admin URL private.</p>
+  </main>
+
+  <script src="config.js"></script>
+  <script type="module">
+    const config = window.COMIC_SITE_CONFIG;
+    const message = document.getElementById("message");
+    const status = document.getElementById("status");
+    const save = document.getElementById("save");
+
+    if (!config.firebase.enabled) {
+      status.textContent = "Firebase is not enabled yet. Follow SETUP.txt first.";
+      save.disabled = true;
+    } else {
+      try {
+        const appModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
+        const dbModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js");
+        const app = appModule.initializeApp(config.firebase);
+        const db = dbModule.getDatabase(app);
+        const bannerRef = dbModule.ref(db,"site/banner");
+
+        dbModule.onValue(bannerRef, snapshot => {
+          message.value = snapshot.val() || config.fallbackMessage;
+        });
+
+        save.addEventListener("click", async () => {
+          const value = message.value.trim();
+          if (!value) {
+            status.textContent = "Enter a message before publishing.";
+            return;
+          }
+          save.disabled = true;
+          status.textContent = "Publishing…";
+          try {
+            await dbModule.set(bannerRef,value);
+            status.textContent = "Message published.";
+          } catch (error) {
+            status.textContent = "Unable to publish. Check Firebase permissions.";
+            console.error(error);
+          } finally {
+            save.disabled = false;
+          }
+        });
+      } catch (error) {
+        status.textContent = "Could not connect to Firebase.";
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
