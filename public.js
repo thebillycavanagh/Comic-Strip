@@ -1,1 +1,72 @@
-import {initializeApp} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";import{getFirestore,collection,getDocs,query,orderBy}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";import{firebaseConfig,siteConfig}from"./firebase-config.js";document.title=siteConfig.title;document.getElementById("site-title").textContent=siteConfig.title;document.getElementById("site-subtitle").textContent=siteConfig.subtitle;const app=initializeApp(firebaseConfig),db=getFirestore(app);let comics=[],nextReleaseMs=null;const fmt=new Intl.DateTimeFormat("en-US",{timeZone:siteConfig.timeZone,weekday:"long",month:"long",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});function esc(v=""){const d=document.createElement("div");d.textContent=v;return d.innerHTML}function render(){const now=Date.now(),published=comics.filter(c=>c.releaseAtMs<=now).sort((a,b)=>b.releaseAtMs-a.releaseAtMs),upcoming=comics.filter(c=>c.releaseAtMs>now).sort((a,b)=>a.releaseAtMs-b.releaseAtMs),current=published[0];nextReleaseMs=upcoming[0]?.releaseAtMs??null;const featured=document.getElementById("featured"),noComic=document.getElementById("no-comic"),archive=document.getElementById("archive"),archiveEmpty=document.getElementById("archive-empty"),banner=document.getElementById("banner");if(current){featured.classList.remove("hidden");noComic.classList.add("hidden");document.getElementById("featured-image").src=current.imageUrl;document.getElementById("featured-image").alt=current.altText||current.title||"Current comic";document.getElementById("featured-title").textContent=current.title||"Today’s Adventure";document.getElementById("featured-caption").textContent=current.caption||"";document.getElementById("featured-date").textContent=fmt.format(new Date(current.releaseAtMs));banner.textContent=current.bannerMessage||siteConfig.fallbackBanner}else{featured.classList.add("hidden");noComic.classList.remove("hidden");banner.textContent=siteConfig.fallbackBanner}archive.innerHTML="";published.slice(1).forEach(comic=>{const b=document.createElement("button");b.className="archive-card";b.type="button";b.innerHTML=`<img src="${comic.imageUrl}" alt="${esc(comic.altText||comic.title||"Previous comic")}"><strong>${esc(comic.title||"Previous Adventure")}</strong><span>${esc(fmt.format(new Date(comic.releaseAtMs)))}</span>`;b.addEventListener("click",()=>{document.getElementById("featured-image").src=comic.imageUrl;document.getElementById("featured-title").textContent=comic.title||"Adventure";document.getElementById("featured-caption").textContent=comic.caption||"";document.getElementById("featured-date").textContent=fmt.format(new Date(comic.releaseAtMs));window.scrollTo({top:featured.offsetTop-90,behavior:"smooth"})});archive.appendChild(b)});archiveEmpty.classList.toggle("hidden",published.length>1)}async function load(){try{const s=await getDocs(query(collection(db,"comics"),orderBy("releaseAtMs","desc")));comics=s.docs.map(d=>({id:d.id,...d.data()}));render()}catch(e){console.error(e);document.getElementById("banner").textContent="The comic schedule could not be loaded. Check Firebase setup.";document.getElementById("no-comic").classList.remove("hidden")}}function tick(){const el=document.getElementById("countdown"),label=document.getElementById("countdown-label");if(!nextReleaseMs){label.textContent="Next release";el.textContent="SCHEDULE COMING SOON";return}const diff=nextReleaseMs-Date.now();if(diff<=0){load();return}const days=Math.floor(diff/86400000),hours=Math.floor(diff%86400000/3600000),minutes=Math.floor(diff%3600000/60000),seconds=Math.floor(diff%60000/1000);label.textContent="Next comic releases in";el.textContent=`${days?days+"D ":""}${String(hours).padStart(2,"0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`}load();setInterval(tick,1000);setInterval(load,60000);
+import { siteConfig, firebaseConfig } from "./firebase-config.js";
+
+const dayOne = {
+  imageUrl: "day-1.png",
+  title: "Day 1 — Whispers in the Crystal Valley",
+  caption: "Megatheia and Blue follow the crystal whispers.",
+  bannerMessage: "Day 1 is here. A new adventure releases daily at 7:19 AM Mountain Time.",
+};
+
+document.title = siteConfig.title;
+document.getElementById("site-title").textContent = siteConfig.title;
+document.getElementById("site-subtitle").textContent = siteConfig.subtitle;
+
+function showComic(comic) {
+  document.getElementById("featured").classList.remove("hidden");
+  document.getElementById("no-comic").classList.add("hidden");
+  document.getElementById("archive-empty").classList.remove("hidden");
+  document.getElementById("featured-image").src = comic.imageUrl;
+  document.getElementById("featured-image").alt = comic.altText || comic.title;
+  document.getElementById("featured-title").textContent = comic.title;
+  document.getElementById("featured-caption").textContent = comic.caption || "";
+  document.getElementById("featured-date").textContent = "DAY 1";
+  document.getElementById("banner").textContent = comic.bannerMessage || siteConfig.fallbackBanner;
+}
+
+function nextRelease() {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: siteConfig.timeZone,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+  }).formatToParts(now);
+  const p = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  const represented = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second);
+  const offset = represented - now.getTime();
+  let release = Date.UTC(+p.year, +p.month - 1, +p.day, siteConfig.releaseHour, siteConfig.releaseMinute) - offset;
+  if (release <= now.getTime()) release += 86400000;
+  return release;
+}
+
+let releaseAt = nextRelease();
+function tick() {
+  if (releaseAt <= Date.now()) releaseAt = nextRelease();
+  const remaining = releaseAt - Date.now();
+  const hours = Math.floor(remaining / 3600000);
+  const minutes = Math.floor((remaining % 3600000) / 60000);
+  const seconds = Math.floor((remaining % 60000) / 1000);
+  document.getElementById("countdown").textContent =
+    `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+showComic(dayOne);
+tick();
+setInterval(tick, 1000);
+
+const firebaseReady = !Object.values(firebaseConfig).some((value) => value.includes("PASTE_"));
+if (firebaseReady) {
+  try {
+    const [{ initializeApp }, { getFirestore, collection, getDocs, query, orderBy }] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js"),
+    ]);
+    const db = getFirestore(initializeApp(firebaseConfig));
+    const snapshot = await getDocs(query(collection(db, "comics"), orderBy("releaseAtMs", "desc")));
+    const published = snapshot.docs.map((doc) => doc.data())
+      .filter((comic) => comic.releaseAtMs <= Date.now())
+      .sort((a, b) => b.releaseAtMs - a.releaseAtMs);
+    if (published[0]) showComic(published[0]);
+  } catch (error) {
+    console.warn("Showing Day 1 while Firebase is unavailable.", error);
+  }
+}
