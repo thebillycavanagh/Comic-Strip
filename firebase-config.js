@@ -1,4 +1,4 @@
-const firebaseConfig = {
+export firebaseConfig = {
   apiKey: "AIzaSyBy9fcHVJ-RQVY4cREPi_vfKF6n3NKciYo",
   authDomain: "cmg-comic-strip.firebaseapp.com",
   projectId: "cmg-comic-strip",
